@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basketball GM Lite</title>
+    <style>
+        body { font-family: sans-serif; background: #121212; color: #fff; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: #1e1e1e; padding: 20px; border-radius: 8px; }
+        button { background: #ff6600; color: white; border: none; padding: 10px 15px; margin: 5px; cursor: pointer; border-radius: 4px; }
+        button:hover { background: #e55500; }
+        pre { background: #2d2d2d; padding: 15px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏀 Basketball GM Lite</h1>
+        <div id="menu">
+            <button onclick="showStandings()">View Standings</button>
+            <button onclick="showRoster()">View Roster</button>
+            <button onclick="simulateNextGame()">Simulate Next Game</button>
+        </div>
+        <h2>Console Output:</h2>
+        <pre id="output">Welcome to the Front Office! Select an option above.</pre>
+    </div>
+
+    <script>
+        const TEAMS = {
+            "Metros": [
+                {name: "Alice Smith", pos: "G", skill: 85},
+                {name: "Bob Jones", pos: "F", skill: 78},
+                {name: "Charlie Brown", pos: "C", skill: 82}
+            ],
+            "Comets": [
+                {name: "David Davis", pos: "G", skill: 80},
+                {name: "Eva Green", pos: "F", skill: 88},
+                {name: "Frank Miller", pos: "C", skill: 75}
+            ],
+            "Stars": [
+                {name: "Grace Lee", pos: "G", skill: 74},
+                {name: "Hank Wilson", pos: "F", skill: 81},
+                {name: "Ivy Taylor", pos: "C", skill: 89}
+            ],
+            "Vipers": [
+                {name: "Jack Evans", pos: "G", skill: 83},
+                {name: "Karen White", pos: "F", skill: 79},
+                {name: "Leo Thomas", pos: "C", skill: 80}
+            ]
+        };
+
+        let standings = {
+            "Metros": {wins: 0, losses: 0},
+            "Comets": {wins: 0, losses: 0},
+            "Stars": {wins: 0, losses: 0},
+            "Vipers": {wins: 0, losses: 0}
+        };
+        
+        const userTeam = "Metros";
+        const output = document.getElementById("output");
+
+        function getTeamRating(teamName) {
+            let players = TEAMS[teamName];
+            let total = players.reduce((sum, p) => sum + p.skill, 0);
+            return Math.floor(total / players.length);
+        }
+
+        function simulateGame(team1, team2) {
+            let r1 = getTeamRating(team1);
+            let r2 = getTeamRating(team2);
+            let s1 = Math.floor(Math.random() * (110 - 80 + 1)) + 80 + (r1 - 80);
+            let s2 = Math.floor(Math.random() * (110 - 80 + 1)) + 80 + (r2 - 80);
+            if (s1 === s2) s1 += Math.random() > 0.5 ? 1 : -1;
+
+            if (s1 > s2) {
+                standings[team1].wins++;
+                standings[team2].losses++;
+                return `${team1} def. ${team2}, ${s1}-${s2}`;
+            } else {
+                standings[team2].wins++;
+                standings[team1].losses++;
+                return `${team2} def. ${team1}, ${s2}-${s1}`;
+            }
+        }
+
+        function showStandings() {
+            let sorted = Object.keys(standings).sort((a,b) => standings[b].wins - standings[a].wins);
+            let text = "--- LEAGUE STANDINGS ---\n";
+            sorted.forEach(team => {
+                let prefix = team === userTeam ? "[YOU] " : "";
+                text += `${prefix}${team}: ${standings[team].wins}W - ${standings[team].losses}L\n`;
+            });
+            output.textContent = text;
+        }
+
+        function showRoster() {
+            let text = `--- ${userTeam} ROSTER ---\n`;
+            TEAMS[userTeam].forEach(p => {
+                text += `${p.name} (${p.pos}) - OVR: ${p.skill}\n`;
+            });
+            output.textContent = text;
+        }
+
+        function simulateNextGame() {
+            let opponents = Object.keys(TEAMS).filter(t => t !== userTeam);
+            let opponent = opponents[Math.floor(Math.random() * opponents.length)];
+            let res1 = simulateGame(userTeam, opponent);
+            
+            let others = Object.keys(TEAMS).filter(t => t !== userTeam && t !== opponent);
+            simulateGame(others[0], others[1]);
+
+            output.textContent = `Game Result:\n${res1}\n\n(Other league games were also simulated. Check standings!)`;
+        }
+    </script>
+</body>
+</html>
